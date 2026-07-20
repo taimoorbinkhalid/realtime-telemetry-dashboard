@@ -1,29 +1,37 @@
 /**
- * Small, locale-aware formatting helpers shared across components.
+ * Small, locale-aware formatting helpers shared across components. Number and
+ * relative-time formatting go through the `Intl` APIs so they respect the
+ * active locale (decimal separators, "vor 3 Minuten", etc.). `locale` defaults
+ * to English so the pure functions stay easy to test.
  */
 
-/** Format a temperature in Celsius, e.g. `21.4°C`. */
-export function formatTemperature(celsius: number): string {
-  return `${celsius.toFixed(1)}°C`
+/** Format a temperature in Celsius, e.g. `21.4°C` (en) / `21,4 °C` (de). */
+export function formatTemperature(celsius: number, locale = 'en'): string {
+  const n = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(celsius)
+  return `${n}°C`
 }
 
 /** Format a relative humidity percentage, e.g. `48%`. */
-export function formatHumidity(percent: number): string {
-  return `${Math.round(percent)}%`
+export function formatHumidity(percent: number, locale = 'en'): string {
+  const n = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(percent))
+  return `${n}%`
 }
 
 /**
- * Format an epoch-millis timestamp as a short relative string ("just now",
- * "3 min ago", "2 h ago"), falling back to a localized time for older values.
+ * Format an epoch-millis timestamp as a localized relative string
+ * ("now", "3 minutes ago", "vor 3 Stunden"), falling back to a localized
+ * absolute date/time for values older than ~30 days.
  */
-export function formatRelativeTime(epochMillis: number, now: number = Date.now()): string {
+export function formatRelativeTime(epochMillis: number, locale = 'en', now: number = Date.now()): string {
   if (!epochMillis) return '—'
-  const diffSec = Math.max(0, Math.round((now - epochMillis) / 1000))
-  if (diffSec < 10) return 'just now'
-  if (diffSec < 60) return `${diffSec}s ago`
-  const diffMin = Math.round(diffSec / 60)
-  if (diffMin < 60) return `${diffMin} min ago`
-  const diffHr = Math.round(diffMin / 60)
-  if (diffHr < 24) return `${diffHr} h ago`
-  return new Date(epochMillis).toLocaleString()
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  const sec = Math.max(0, Math.round((now - epochMillis) / 1000))
+  if (sec < 60) return rtf.format(-sec, 'second')
+  const min = Math.round(sec / 60)
+  if (min < 60) return rtf.format(-min, 'minute')
+  const hr = Math.round(min / 60)
+  if (hr < 24) return rtf.format(-hr, 'hour')
+  const day = Math.round(hr / 24)
+  if (day < 30) return rtf.format(-day, 'day')
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(epochMillis))
 }

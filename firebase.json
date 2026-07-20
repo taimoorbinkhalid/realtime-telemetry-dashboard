@@ -14,6 +14,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "telemetry-monitor-demo",
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [

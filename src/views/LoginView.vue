@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useAppTheme } from '@/composables/useAppTheme'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -129,20 +130,24 @@ async function onDemoLogin(): Promise<void> {
       </v-col>
     </v-row>
 
-    <v-btn
-      :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
-      :aria-label="t('actions.toggleTheme')"
-      variant="text"
-      class="theme-toggle"
-      @click="toggle"
-    />
+    <div class="corner-toolbar">
+      <LanguageSwitcher />
+      <v-btn
+        :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+        :aria-label="t('actions.toggleTheme')"
+        variant="text"
+        @click="toggle"
+      />
+    </div>
   </v-container>
 </template>
 
 <style scoped>
-.theme-toggle {
+.corner-toolbar {
   position: fixed;
   top: 16px;
   right: 16px;
+  display: flex;
+  gap: 4px;
 }
 </style>

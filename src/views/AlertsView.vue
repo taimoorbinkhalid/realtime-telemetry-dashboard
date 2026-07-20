@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user'
 import { formatRelativeTime } from '@/utils/format'
 import SeverityChip from '@/components/SeverityChip.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const store = useAlertsStore()
 const userStore = useUserStore()
 const { active, resolved, error } = storeToRefs(store)
@@ -47,7 +47,7 @@ function onAcknowledge(alertId: string): void {
             <template #append>
               <div class="d-flex align-center ga-3">
                 <span class="text-caption text-medium-emphasis">
-                  {{ formatRelativeTime(alert.createdAt) }}
+                  {{ formatRelativeTime(alert.createdAt, locale) }}
                 </span>
                 <v-chip
                   v-if="userStore.isAcknowledged(alert.id)"
@@ -91,7 +91,7 @@ function onAcknowledge(alertId: string): void {
             <v-list-item-subtitle>{{ alert.message }}</v-list-item-subtitle>
             <template #append>
               <span class="text-caption text-medium-emphasis">
-                {{ alert.resolvedAt ? formatRelativeTime(alert.resolvedAt) : '' }}
+                {{ alert.resolvedAt ? formatRelativeTime(alert.resolvedAt, locale) : '' }}
               </span>
             </template>
           </v-list-item>

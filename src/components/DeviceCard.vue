@@ -9,12 +9,14 @@ import StatusChip from './StatusChip.vue'
 import AnimatedNumber from './AnimatedNumber.vue'
 
 const props = defineProps<{ device: Device }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const alertsStore = useAlertsStore()
 const userStore = useUserStore()
 
+const tempFmt = (n: number) => formatTemperature(n, locale.value)
+const humFmt = (n: number) => formatHumidity(n, locale.value)
 const lastSeen = computed(() =>
-  t('device.lastSeen', { time: formatRelativeTime(props.device.lastReadingAt) }),
+  t('device.lastSeen', { time: formatRelativeTime(props.device.lastReadingAt, locale.value) }),
 )
 const activeAlerts = computed(() => alertsStore.activeForDevice(props.device.id))
 const isFavorite = computed(() => userStore.isFavorite(props.device.id))
@@ -63,7 +65,7 @@ function onToggleFavorite(): void {
           <div>
             <div class="text-caption text-medium-emphasis">{{ t('device.temperature') }}</div>
             <div class="text-h6">
-              <AnimatedNumber :value="device.temperature" :formatter="formatTemperature" />
+              <AnimatedNumber :value="device.temperature" :formatter="tempFmt" />
             </div>
           </div>
         </div>
@@ -72,7 +74,7 @@ function onToggleFavorite(): void {
           <div>
             <div class="text-caption text-medium-emphasis">{{ t('device.humidity') }}</div>
             <div class="text-h6">
-              <AnimatedNumber :value="device.humidity" :formatter="formatHumidity" />
+              <AnimatedNumber :value="device.humidity" :formatter="humFmt" />
             </div>
           </div>
         </div>

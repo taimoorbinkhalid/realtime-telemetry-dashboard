@@ -8,6 +8,7 @@ import { useAlertsStore } from '@/stores/alerts'
 import { useUserStore } from '@/stores/user'
 import { useAppTheme } from '@/composables/useAppTheme'
 import NotificationBell from '@/components/NotificationBell.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -55,6 +56,7 @@ async function onSignOut(): Promise<void> {
 
       <template #append>
         <NotificationBell />
+        <LanguageSwitcher />
         <v-btn
           :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
           :aria-label="t('actions.toggleTheme')"

@@ -8,7 +8,7 @@ device cards showing live temperature, humidity, and status that update with no
 page refresh, plus a per-device history chart. Built as a portfolio demo with
 100% generated data (no real systems, no confidential data).
 
-**Live demo:** _(add your Firebase Hosting URL here)_ · one-click **Demo login**,
+**Live demo:** https://telemetry-monitor-demo.web.app · one-click **Demo login**,
 no sign-up needed.
 
 ## Stack
@@ -33,6 +33,8 @@ no sign-up needed.
   acknowledge, plus per-device indicators and a notification badge.
 - **Per-user data** (favorites, acknowledgements, preferences) under
   owner-scoped security rules.
+- **6 languages** (en, de, fr, pl, it, es) with a language switcher and
+  locale-aware number / date / relative-time formatting.
 
 ## Architecture notes
 

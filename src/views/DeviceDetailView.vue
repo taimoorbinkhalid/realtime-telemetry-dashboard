@@ -12,9 +12,12 @@ import TelemetryChart from '@/components/TelemetryChart.vue'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 
 const props = defineProps<{ id: string }>()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const userStore = useUserStore()
 const alertsStore = useAlertsStore()
+
+const tempFmt = (n: number) => formatTemperature(n, locale.value)
+const humFmt = (n: number) => formatHumidity(n, locale.value)
 
 const device = ref<Device | null>(null)
 const readings = ref<Reading[]>([])
@@ -95,7 +98,7 @@ onUnmounted(() => {
       </div>
       <p class="text-medium-emphasis">
         <v-icon icon="mdi-map-marker-outline" size="16" /> {{ device.location }}
-        &middot; {{ t('device.lastSeen', { time: formatRelativeTime(device.lastReadingAt) }) }}
+        &middot; {{ t('device.lastSeen', { time: formatRelativeTime(device.lastReadingAt, locale) }) }}
       </p>
 
       <!-- Active alerts for this device -->
@@ -121,7 +124,7 @@ onUnmounted(() => {
               <div>
                 <div class="text-caption">{{ t('device.temperature') }}</div>
                 <div class="text-h5">
-                  <AnimatedNumber :value="device.temperature" :formatter="formatTemperature" />
+                  <AnimatedNumber :value="device.temperature" :formatter="tempFmt" />
                 </div>
               </div>
             </v-card-text>
@@ -134,7 +137,7 @@ onUnmounted(() => {
               <div>
                 <div class="text-caption">{{ t('device.humidity') }}</div>
                 <div class="text-h5">
-                  <AnimatedNumber :value="device.humidity" :formatter="formatHumidity" />
+                  <AnimatedNumber :value="device.humidity" :formatter="humFmt" />
                 </div>
               </div>
             </v-card-text>

@@ -9,9 +9,12 @@ import { useAlertsStore } from '@/stores/alerts'
 import KpiTile from '@/components/KpiTile.vue'
 import StatusDonut from '@/components/StatusDonut.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const alertsStore = useAlertsStore()
 const { activeCount } = storeToRefs(alertsStore)
+
+const tempFmt = (n: number) => formatTemperature(n, locale.value)
+const humFmt = (n: number) => formatHumidity(n, locale.value)
 
 const stats = ref<FleetStats | null>(null)
 const loading = ref(true)
@@ -87,7 +90,7 @@ const s = computed(() => stats.value)
           <KpiTile
             :label="t('overview.avgTemperature')"
             :value="s.avgTemperature"
-            :formatter="formatTemperature"
+            :formatter="tempFmt"
             icon="mdi-thermometer"
             color="accent"
           />
@@ -96,7 +99,7 @@ const s = computed(() => stats.value)
           <KpiTile
             :label="t('overview.avgHumidity')"
             :value="s.avgHumidity"
-            :formatter="formatHumidity"
+            :formatter="humFmt"
             icon="mdi-water-percent"
             color="info"
           />

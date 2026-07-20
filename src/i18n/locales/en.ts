@@ -15,6 +15,7 @@ export default {
     acknowledged: 'Acknowledged',
     exportCsv: 'Export CSV',
     clearFilters: 'Clear filters',
+    language: 'Language',
   },
   nav: {
     overview: 'Overview',
