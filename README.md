@@ -1,5 +1,8 @@
 # Telemetry Monitor — real-time device dashboard
 
+[![CI](https://github.com/taimoorbinkhalid/realtime-telemetry-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/taimoorbinkhalid/realtime-telemetry-dashboard/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A small but production-shaped **real-time monitoring dashboard**: a grid of
 device cards showing live temperature, humidity, and status that update with no
 page refresh, plus a per-device history chart. Built as a portfolio demo with
@@ -24,6 +27,9 @@ no sign-up needed.
 - `src/plugins/theme.ts` is the single source of color tokens (no inline hex).
 - Firestore security rules (`firestore.rules`) are **read-only for clients**;
   all writes come from the trusted seeder (Admin SDK).
+
+See [`docs/architecture.md`](docs/architecture.md) for the full data model, data
+flow, and security model.
 
 ## Getting started
 
@@ -59,4 +65,17 @@ firebase deploy --only hosting
 | `npm run build` | Type-check and build for production |
 | `npm run typecheck` | Type-check only |
 | `npm run lint` | Lint `.vue` / `.ts` |
+| `npm test` | Run unit tests (Vitest, watch mode) |
+| `npm run test:run` | Run unit tests once (used by CI) |
 | `npm run seed` | Stream fake telemetry into Firestore |
+
+## Testing & CI
+
+Unit tests (Vitest) cover the pure formatters and the Pinia stores (with the
+data layer mocked). Every push and PR runs lint → typecheck → test → build via
+[GitHub Actions](.github/workflows/ci.yml).
+
+## Contributing & license
+
+Development workflow, commit conventions, and deploy steps are in
+[CONTRIBUTING.md](CONTRIBUTING.md). Licensed under [MIT](LICENSE).
