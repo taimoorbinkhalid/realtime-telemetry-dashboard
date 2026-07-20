@@ -7,9 +7,9 @@
  */
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { getFirestore } from 'firebase-admin/firestore'
-import { REGION, SCHEDULE, DEVICES, READINGS } from './config'
-import { DEVICE_SPECS, drift, round, statusFor } from './lib/telemetry'
-import { buildThresholds } from './lib/thresholds'
+import { REGION, SCHEDULE, DEVICES, READINGS } from './config.js'
+import { DEVICE_SPECS, drift, round, statusFor } from './lib/telemetry.js'
+import { buildThresholds } from './lib/thresholds.js'
 
 export const generateTelemetry = onSchedule(
   { schedule: SCHEDULE, region: REGION, maxInstances: 1, memory: '256MiB', timeoutSeconds: 60 },

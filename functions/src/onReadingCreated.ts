@@ -10,9 +10,9 @@
  */
 import { onDocumentCreated } from 'firebase-functions/v2/firestore'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
-import { REGION, DEVICES, READINGS, ALERTS, ALERT_STATE } from './config'
-import { decideAlertAction, evaluateMetric, type AlertMetric } from './lib/alerts'
-import type { DeviceThresholds } from './lib/thresholds'
+import { REGION, DEVICES, READINGS, ALERTS, ALERT_STATE } from './config.js'
+import { decideAlertAction, evaluateMetric, type AlertMetric } from './lib/alerts.js'
+import type { DeviceThresholds } from './lib/thresholds.js'
 
 const METRICS: AlertMetric[] = ['temperature', 'humidity']
 const UNIT: Record<AlertMetric, string> = { temperature: '°C', humidity: '%' }
