@@ -1,0 +1,42 @@
+{
+  "name": "upwork-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Real-time device monitoring dashboard — Vue 3 + Vuetify 3 + Firebase portfolio demo.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .vue,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
+    "seed": "tsx seeder/seed.ts"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "chart.js": "^4.4.2",
+    "firebase": "^10.11.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-chartjs": "^5.3.1",
+    "vue-i18n": "^9.13.1",
+    "vue-router": "^4.3.2",
+    "vuetify": "^3.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.25.0",
+    "firebase-admin": "^12.1.0",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vite-plugin-vuetify": "^2.0.3",
+    "vue-tsc": "^2.0.14"
+  }
+}
