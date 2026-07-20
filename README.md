@@ -11,7 +11,7 @@ no sign-up needed.
 ## Stack
 
 - **Vue 3** (Composition API + `<script setup>`) + **TypeScript**
-- **Vuetify 3** for UI, with centralized light/dark theme tokens
+- **Vuetify 4** for UI, with centralized light/dark theme tokens
 - **Firebase**: Auth (email/password), Firestore (`onSnapshot` real-time), Hosting
 - **Pinia** for state, **Vue Router** with an auth guard
 - **Chart.js** (via `vue-chartjs`) for the history chart
@@ -27,7 +27,7 @@ no sign-up needed.
 
 ## Getting started
 
-Requires **Node 18+** (see `.nvmrc`).
+Requires **Node 20.19+** (the repo pins **Node 24 LTS** via `.nvmrc`; run `nvm use`).
 
 ```bash
 npm install

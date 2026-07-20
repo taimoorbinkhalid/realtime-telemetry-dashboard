@@ -42,15 +42,19 @@ const labels = computed(() =>
 )
 
 const chartData = computed<ChartData<'line'>>(() => {
+  // Vuetify 4 types theme colors as a union (string | color object), so coerce
+  // to the hex strings Chart.js expects.
   const colors = theme.current.value.colors
+  const accent = String(colors.accent)
+  const info = String(colors.info)
   return {
     labels: labels.value,
     datasets: [
       {
         label: `${t('device.temperature')} (${t('units.celsius')})`,
         data: ordered.value.map((r) => r.temperature),
-        borderColor: colors.accent,
-        backgroundColor: colors.accent + '33',
+        borderColor: accent,
+        backgroundColor: accent + '33',
         fill: true,
         tension: 0.35,
         pointRadius: 0,
@@ -59,7 +63,7 @@ const chartData = computed<ChartData<'line'>>(() => {
       {
         label: `${t('device.humidity')} (${t('units.percent')})`,
         data: ordered.value.map((r) => r.humidity),
-        borderColor: colors.info,
+        borderColor: info,
         backgroundColor: 'transparent',
         tension: 0.35,
         pointRadius: 0,

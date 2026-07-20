@@ -3,40 +3,46 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Real-time device monitoring dashboard — Vue 3 + Vuetify 3 + Firebase portfolio demo.",
+  "description": "Real-time device monitoring dashboard: Vue 3 + Vuetify 4 + Firebase portfolio demo.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint . --ext .vue,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --max-warnings 0",
     "seed": "tsx seeder/seed.ts"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "chart.js": "^4.4.2",
-    "firebase": "^10.11.0",
-    "pinia": "^2.1.7",
-    "vue": "^3.4.21",
-    "vue-chartjs": "^5.3.1",
-    "vue-i18n": "^9.13.1",
-    "vue-router": "^4.3.2",
-    "vuetify": "^3.6.4"
+    "chart.js": "^4.5.1",
+    "firebase": "^12.16.0",
+    "pinia": "^4.0.2",
+    "vue": "^3.5.40",
+    "vue-chartjs": "^5.3.4",
+    "vue-i18n": "^11.4.7",
+    "vue-router": "^5.2.0",
+    "vuetify": "^4.1.5"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
-    "@vitejs/plugin-vue": "^5.0.4",
-    "@vue/eslint-config-typescript": "^13.0.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-vue": "^9.25.0",
-    "firebase-admin": "^12.1.0",
-    "tsx": "^4.7.2",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.10",
-    "vite-plugin-vuetify": "^2.0.3",
-    "vue-tsc": "^2.0.14"
+    "@types/node": "^26.1.1",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "eslint": "^10.7.0",
+    "eslint-plugin-vue": "^10.10.0",
+    "firebase-admin": "^14.2.0",
+    "tsx": "^4.23.1",
+    "typescript": "~6.0.0",
+    "vite": "^8.1.5",
+    "vite-plugin-vuetify": "^2.1.3",
+    "vue-tsc": "^3.3.7"
+  },
+  "allowScripts": {
+    "@firebase/util@1.15.1": true,
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true,
+    "protobufjs@7.6.5": true
   }
 }
