@@ -3,16 +3,25 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Device } from '@/types'
 import { formatHumidity, formatRelativeTime, formatTemperature } from '@/utils/format'
+import { useAlertsStore } from '@/stores/alerts'
+import { useUserStore } from '@/stores/user'
 import StatusChip from './StatusChip.vue'
+import AnimatedNumber from './AnimatedNumber.vue'
 
 const props = defineProps<{ device: Device }>()
 const { t } = useI18n()
+const alertsStore = useAlertsStore()
+const userStore = useUserStore()
 
-const temperature = computed(() => formatTemperature(props.device.temperature))
-const humidity = computed(() => formatHumidity(props.device.humidity))
 const lastSeen = computed(() =>
   t('device.lastSeen', { time: formatRelativeTime(props.device.lastReadingAt) }),
 )
+const activeAlerts = computed(() => alertsStore.activeForDevice(props.device.id))
+const isFavorite = computed(() => userStore.isFavorite(props.device.id))
+
+function onToggleFavorite(): void {
+  userStore.toggleFavorite(props.device.id)
+}
 </script>
 
 <template>
@@ -32,7 +41,18 @@ const lastSeen = computed(() =>
             {{ device.location }}
           </v-card-subtitle>
         </div>
-        <StatusChip :status="device.status" />
+        <div class="d-flex align-center ga-1">
+          <v-btn
+            :icon="isFavorite ? 'mdi-star' : 'mdi-star-outline'"
+            :color="isFavorite ? 'amber' : undefined"
+            :aria-label="isFavorite ? t('favorites.remove') : t('favorites.add')"
+            variant="text"
+            density="comfortable"
+            size="small"
+            @click.prevent.stop="onToggleFavorite"
+          />
+          <StatusChip :status="device.status" />
+        </div>
       </div>
     </v-card-item>
 
@@ -42,17 +62,32 @@ const lastSeen = computed(() =>
           <v-icon icon="mdi-thermometer" color="accent" />
           <div>
             <div class="text-caption text-medium-emphasis">{{ t('device.temperature') }}</div>
-            <div class="text-h6">{{ temperature }}</div>
+            <div class="text-h6">
+              <AnimatedNumber :value="device.temperature" :formatter="formatTemperature" />
+            </div>
           </div>
         </div>
         <div class="d-flex align-center ga-2">
           <v-icon icon="mdi-water-percent" color="info" />
           <div>
             <div class="text-caption text-medium-emphasis">{{ t('device.humidity') }}</div>
-            <div class="text-h6">{{ humidity }}</div>
+            <div class="text-h6">
+              <AnimatedNumber :value="device.humidity" :formatter="formatHumidity" />
+            </div>
           </div>
         </div>
       </div>
+
+      <v-chip
+        v-if="activeAlerts.length"
+        color="error"
+        size="small"
+        variant="tonal"
+        class="mt-3"
+        prepend-icon="mdi-alert"
+      >
+        {{ t('alerts.indicator', activeAlerts.length) }}
+      </v-chip>
     </v-card-text>
 
     <v-divider />

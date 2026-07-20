@@ -10,6 +10,7 @@ import {
   orderBy,
   query,
   limit,
+  where,
   type DocumentData,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore'
@@ -98,6 +99,31 @@ export function subscribeToReadings(
 ): () => void {
   const q = query(
     collection(db, DEVICES, deviceId, READINGS),
+    orderBy('recordedAt', 'desc'),
+    limit(max),
+  )
+  return onSnapshot(
+    q,
+    (snapshot) => onData(snapshot.docs.map(mapReading)),
+    (error) => onError(error),
+  )
+}
+
+/**
+ * Live-subscribe to a device's readings since a given epoch-ms cutoff (newest
+ * first, capped at `max`). Uses the existing single-field `recordedAt` index, so
+ * no new composite index is required.
+ */
+export function subscribeToReadingsInRange(
+  deviceId: string,
+  sinceEpochMs: number,
+  max: number,
+  onData: (readings: Reading[]) => void,
+  onError: (error: Error) => void,
+): () => void {
+  const q = query(
+    collection(db, DEVICES, deviceId, READINGS),
+    where('recordedAt', '>=', sinceEpochMs),
     orderBy('recordedAt', 'desc'),
     limit(max),
   )

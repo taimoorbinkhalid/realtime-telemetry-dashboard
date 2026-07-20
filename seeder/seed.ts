@@ -82,7 +82,16 @@ async function main(): Promise<void> {
   for (const spec of DEVICE_SPECS) {
     state.set(spec.id, { temp: spec.baseTemp, hum: spec.baseHum })
     await db.collection('devices').doc(spec.id).set(
-      { name: spec.name, location: spec.location },
+      {
+        name: spec.name,
+        location: spec.location,
+        // Persisted thresholds so the alert function has baselines (matches
+        // functions/src/lib/thresholds.ts buildThresholds).
+        thresholds: {
+          temperature: { base: spec.baseTemp, warnDelta: 3, critDelta: 6 },
+          humidity: { base: spec.baseHum, warnDelta: 10, critDelta: 20 },
+        },
+      },
       { merge: true },
     )
   }

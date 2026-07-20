@@ -21,6 +21,11 @@ You should see it seed six demo devices and then stream a new batch of readings
 every few seconds. Leave it running while you use the dashboard; press
 `Ctrl-C` to stop.
 
+> **Do not run this against production while the scheduled Cloud Function
+> (`generateTelemetry`) is deployed.** Both would write readings, doubling data
+> and making device status / alerts flap. Use the seeder for local development
+> against the Firestore emulator (or a separate dev project) only.
+
 ## What it writes
 
 - `devices/{id}` — one doc per device with denormalized latest values

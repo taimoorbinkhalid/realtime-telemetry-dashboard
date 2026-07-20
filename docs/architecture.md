@@ -13,31 +13,44 @@ live.
 | Language | **TypeScript** (strict) | Type safety across app + seeder |
 | State | **Pinia** | Lightweight, typed store; one listener shared across components |
 | Routing | **Vue Router** with an auth guard | Protects the dashboard behind sign-in |
-| Data / backend | **Firebase** — Auth, Firestore, Hosting | Real-time reads via `onSnapshot`; no server to run |
-| Charts | **Chart.js** via `vue-chartjs` | Simple, dependable history chart |
-| i18n | **vue-i18n** | All UI text is keyed, never hardcoded |
+| Data / backend | **Firebase** — Auth, Firestore, Hosting | Real-time reads via `onSnapshot` |
+| Server logic | **Cloud Functions v2** | Scheduled telemetry + event-driven alerting |
+| Charts | **Chart.js** via `vue-chartjs` | History line chart + status donut |
+| i18n / PWA | **vue-i18n**, **vite-plugin-pwa** | Keyed UI text; installable, offline app shell |
 | Build / test | **Vite**, **Vitest**, **ESLint** | Fast dev loop; CI-enforced quality gates |
 
 ## Data model (Firestore)
 
 ```
 devices/{deviceId}
-  ├─ name: string              # display name
-  ├─ location: string          # free-text label
+  ├─ name, location: string
   ├─ status: "online" | "warning" | "offline"   # derived from latest reading
-  ├─ temperature: number       # latest sample, °C  (denormalized for the grid)
-  ├─ humidity: number          # latest sample, %   (denormalized for the grid)
-  ├─ lastReadingAt: number     # epoch millis
-  └─ readings/{readingId}      # time-ordered history subcollection
-       ├─ temperature: number
-       ├─ humidity: number
-       └─ recordedAt: number   # epoch millis
+  ├─ temperature, humidity: number   # latest sample (denormalized for the grid)
+  ├─ lastReadingAt: number           # epoch millis
+  ├─ thresholds: { temperature: {base,warnDelta,critDelta}, humidity: {…} }
+  └─ readings/{readingId}            # time-ordered history subcollection
+       ├─ temperature, humidity: number
+       └─ recordedAt: number         # epoch millis
+
+alerts/{alertId}                     # written only by Cloud Functions
+  ├─ deviceId, deviceName, metric, severity, status
+  ├─ value, bound, message: …
+  └─ createdAt, resolvedAt: number   # epoch millis
+
+alertState/{deviceId}__{metric}      # internal pointer; denied to all clients
+  └─ { activeAlertId, severity, lastRecordedAt }
+
+users/{uid}/                         # owner-scoped; the only client-writable data
+  ├─ favorites/{deviceId}
+  ├─ acknowledgedAlerts/{alertId}
+  └─ settings/preferences
 ```
 
-The latest values are **denormalized** onto each `devices/{id}` document so the
-dashboard grid renders from a single collection subscription, without fanning
-out a read per device into the `readings` subcollection. The detail view
-subscribes to the subcollection only for the device being viewed.
+Timestamps are **epoch-millis numbers** everywhere (never Firestore
+`Timestamp`), so the client mappers and the functions agree. Latest values are
+**denormalized** onto each `devices/{id}` document so the grid renders from a
+single subscription. Thresholds are persisted on the device so the alert
+function has baselines to evaluate against.
 
 ## Data flow
 
@@ -59,24 +72,33 @@ subscribes to the subcollection only for the device being viewed.
                                                                               └─────────────────┘
 ```
 
-1. The **seeder** (`seeder/seed.ts`) uses the Firebase **Admin SDK** to write
-   randomized telemetry every few seconds. It runs locally / off-platform and
-   bypasses security rules, so it is the only writer.
-2. The client subscribes to Firestore through the **service layer**
-   (`src/services/`). Nothing else imports the Firestore SDK directly.
-3. Services push updates into **Pinia stores**, which own the subscription
-   lifecycle (one shared listener, torn down on sign-out).
-4. **Components** read reactive store state and re-render on every snapshot: no
-   manual refresh, no polling.
+1. In production, the scheduled Cloud Function **`generateTelemetry`** writes
+   randomized telemetry (the local **seeder** does the same job for dev). Both
+   use the Admin SDK and bypass rules.
+2. Each new reading fires the **`onReadingCreated`** trigger, which evaluates it
+   against the device's thresholds and maintains the `alerts` collection
+   (open / resolve / escalate) via a transaction on a per-metric pointer doc, so
+   there is at most one active alert per device+metric and delivery is idempotent.
+3. The client subscribes to Firestore through the **service layer**
+   (`src/services/`); nothing else imports the Firestore SDK directly. Fleet KPIs
+   use server-side **aggregation queries** rather than pulling every document.
+4. Services push updates into **Pinia stores** (devices, alerts, user, auth),
+   which own the subscription lifecycle (shared listeners, torn down on sign-out).
+5. **Components** read reactive store state and re-render on every snapshot. The
+   only client writes are per-user favorites / acknowledgements / preferences.
 
 ## Security model
 
-- Firestore rules (`firestore.rules`) grant **read to any signed-in user** and
-  **deny all client writes** (`allow write: if false`). A default-deny rule
-  covers everything else.
-- All writes therefore come exclusively from the trusted seeder via the Admin
-  SDK, which bypasses rules. The public demo is tamper-proof: visitors can view
-  live data but cannot modify it.
+- Firestore rules (`firestore.rules`) grant **read to any signed-in user** on
+  `devices`, `readings`, and `alerts`, and **deny client writes** to them
+  (`allow write: if false`). The internal `alertState` pointers are denied to
+  clients entirely by the default-deny rule.
+- The only client-writable data is `/users/{uid}/…`, guarded by an
+  **owner-scoped** rule (`request.auth.uid == userId`): a user can read and write
+  only their own favorites, acknowledgements, and preferences.
+- All telemetry/alert writes come from the trusted seeder or Cloud Functions via
+  the Admin SDK, which bypasses rules. The public demo is tamper-proof: visitors
+  view live data and manage their own preferences, but cannot alter the fleet.
 - The Firebase **web config** (API key, etc.) is public by design and shipped
   in the bundle; it is not a secret. The service-account key **is** a secret and
   is gitignored, never committed, never shipped to the client.
@@ -87,17 +109,19 @@ subscribes to the subcollection only for the device being viewed.
 
 ```
 src/
-  services/      Firebase init + data-access modules (the only Firestore callers)
-  stores/        Pinia stores (auth, devices) — subscription lifecycle + state
-  views/         Route-level screens (Login, Dashboard, DeviceDetail)
-  components/    Presentational units (DeviceCard, StatusChip, TelemetryChart)
-  composables/   Reusable Composition API logic (e.g. theme)
+  services/      Firebase init + data-access modules (device, alert, analytics, user)
+  stores/        Pinia stores (auth, devices, alerts, user) — subscriptions + state
+  views/         Route screens (Login, Overview, Dashboard, DeviceDetail, Alerts, Settings)
+  components/    Presentational units (DeviceCard, StatusChip, SeverityChip,
+                 TelemetryChart, StatusDonut, KpiTile, NotificationBell, AnimatedNumber)
+  composables/   Reusable logic (theme, device filters, animated numbers)
   plugins/       Vuetify + theme token setup
   i18n/          vue-i18n config + locale strings
-  utils/         Pure helpers (formatting)
-  types/         Shared domain types (Device, Reading, DeviceStatus)
-seeder/          Standalone Admin-SDK telemetry generator
-firestore.rules  Read-only-for-clients security rules
+  utils/         Pure helpers (formatting, CSV)
+  types/         Shared domain types (Device, Reading, Alert, FleetStats, …)
+functions/       Cloud Functions v2 (generateTelemetry, onReadingCreated) + pure logic
+seeder/          Standalone Admin-SDK telemetry generator (local dev)
+firestore.rules  Client read-only for fleet data; owner-scoped /users/{uid}
 ```
 
 ## Conventions

@@ -15,6 +15,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
+    name: 'overview',
+    component: () => import('@/views/OverviewView.vue'),
+  },
+  {
+    path: '/devices',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
   },
@@ -23,6 +28,16 @@ const routes: RouteRecordRaw[] = [
     name: 'device',
     component: () => import('@/views/DeviceDetailView.vue'),
     props: true,
+  },
+  {
+    path: '/alerts',
+    name: 'alerts',
+    component: () => import('@/views/AlertsView.vue'),
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('@/views/SettingsView.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
