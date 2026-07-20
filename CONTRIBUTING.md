@@ -46,32 +46,54 @@ npm run build       # type-check + production build
 
 ## Testing
 
-- Tests live next to the code as `*.spec.ts` and run on **Vitest**.
-- Scope: **pure logic** (`src/utils/`) and **Pinia stores** (with the service
-  layer mocked). Data-access modules are kept thin so the app is testable
-  without hitting Firebase.
-- `npm test` runs Vitest in watch mode during development; `npm run test:run`
-  is the one-shot run used by CI.
-- Add a test with any behavior change: a new formatter, a new store action, a
-  new derivation. Don't test framework glue or presentational markup.
+- Tests live next to the code as `*.spec.ts` and run on **Vitest** (co-located,
+  not a separate `tests/` tree).
+- Scope:
+  - **Pure logic** (`src/utils/`) and **composables** (filters, easing).
+  - **Pinia stores**, with the service layer mocked (`vi.mock('@/services/…')`)
+    so tests never hit Firebase.
+  - **Components / views** via `@vue/test-utils` + happy-dom (opt in per file
+    with `// @vitest-environment happy-dom`; mount through `src/test/mount.ts`).
+  - **Cloud Functions** pure logic (`functions/src/lib/*.spec.ts`).
+- `npm test` is watch mode; `npm run test:run` is the one-shot CI run. The
+  functions package has its own `npm --prefix functions run test:run`.
+- Don't test framework glue or exact markup; do test behavior and derivations.
 
-## Documentation
+## Documentation & tests are part of every change
 
-- Keep [README.md](README.md) accurate for setup/usage.
-- Keep [docs/architecture.md](docs/architecture.md) current when the data model,
-  data flow, or security model changes.
-- The seeder has its own [seeder/README.md](seeder/README.md).
+Treat stale docs or missing tests as an **incomplete change**, not a follow-up.
+Every feature or behavior change ships with:
+
+- Updated [README.md](README.md) (setup/usage/features) and
+  [docs/architecture.md](docs/architecture.md) (stack, data model, flow, security,
+  i18n, PWA, deployment) when any of those move.
+- Updated JSDoc on exported functions / non-trivial logic.
+- New or updated `*.spec.ts` covering the new behavior.
+
+The seeder and functions have their own READMEs/JSDoc; keep them current too.
 
 ## Deploying
 
-Deploys are **manual and deliberate** (never automatic on push):
+Deploys are **manual and deliberate** (never automatic on push) and must use the
+personal Firebase account. Use the project commands, which encode the correct
+account, targets, and gotchas:
 
-- **Locally:** `npm run build && firebase deploy --only hosting`
-- **Via GitHub Actions:** Actions tab → **Deploy to Firebase Hosting** → *Run
-  workflow*. This requires the `FIREBASE_SERVICE_ACCOUNT` and `VITE_FIREBASE_*`
-  repository secrets (see [.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
+- **Frontend:** `/deploy-web` → builds and deploys hosting to the
+  `telemetry-monitor-demo` site.
+- **Backend:** `/deploy-backend` → deploys Cloud Functions + Firestore rules +
+  indexes (requires the Blaze plan).
 
-Security rules are deployed separately: `firebase deploy --only firestore:rules`.
+Equivalent raw commands (note the mandatory `--account`):
+
+```bash
+npx firebase-tools deploy --only hosting \
+  --project telemetry-monitor-ecfc7 --account taimoorkhalid95@gmail.com
+npx firebase-tools deploy --only functions,firestore:rules,firestore:indexes \
+  --project telemetry-monitor-ecfc7 --account taimoorkhalid95@gmail.com
+```
+
+The old `telemetry-monitor-ecfc7.web.app` site is a 301 redirect to the demo
+site. The Firestore emulator (for local backend testing) needs **JDK 21+**.
 
 ## Never commit secrets
 
