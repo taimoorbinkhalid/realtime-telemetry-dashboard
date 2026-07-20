@@ -8,9 +8,9 @@
  * location not matching the `eur3` database, change this to `eur3`. */
 export const REGION = 'europe-west1'
 
-/** Scheduled telemetry cadence. Cloud Scheduler minimum is 1 minute; 2 minutes
- * keeps writes within the Firestore free tier. */
-export const SCHEDULE = 'every 2 minutes'
+/** Scheduled telemetry cadence. Cloud Scheduler minimum is 1 minute; 5 minutes
+ * keeps writes comfortably within the Firestore free tier. */
+export const SCHEDULE = 'every 5 minutes'
 
 // Collection names, single-sourced.
 export const DEVICES = 'devices'

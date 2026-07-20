@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import type { FleetStats } from '@/types'
 import { getFleetStats } from '@/services/analyticsService'
 import { formatHumidity, formatTemperature } from '@/utils/format'
 import { useAlertsStore } from '@/stores/alerts'
+import { useDevicesStore } from '@/stores/devices'
 import KpiTile from '@/components/KpiTile.vue'
 import StatusDonut from '@/components/StatusDonut.vue'
 
 const { t, locale } = useI18n()
 const alertsStore = useAlertsStore()
+const devicesStore = useDevicesStore()
 const { activeCount } = storeToRefs(alertsStore)
+const { devices } = storeToRefs(devicesStore)
 
 const tempFmt = (n: number) => formatTemperature(n, locale.value)
 const humFmt = (n: number) => formatHumidity(n, locale.value)
@@ -20,11 +23,8 @@ const stats = ref<FleetStats | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-// Aggregation queries are one-shot; refresh on mount and on a light interval so
-// the KPIs stay current as the fleet streams (numbers animate between values).
-const REFRESH_MS = 30_000
-let timer: ReturnType<typeof setInterval> | undefined
-
+/** Recompute server-side aggregates. Called on mount and whenever the live
+ * device stream changes, so the KPIs update the instant new data arrives. */
 async function loadStats(): Promise<void> {
   try {
     stats.value = await getFleetStats()
@@ -37,10 +37,15 @@ async function loadStats(): Promise<void> {
 }
 
 onMounted(() => {
+  devicesStore.subscribe()
   loadStats()
-  timer = setInterval(loadStats, REFRESH_MS)
 })
-onUnmounted(() => clearInterval(timer))
+
+// A cheap fingerprint of the live device docs; changes on every new reading.
+const fingerprint = computed(() =>
+  devices.value.reduce((sum, d) => sum + d.lastReadingAt, 0) + ':' + devices.value.length,
+)
+watch(fingerprint, () => loadStats())
 
 const s = computed(() => stats.value)
 </script>

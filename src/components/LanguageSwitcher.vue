@@ -19,18 +19,18 @@ function choose(next: AppLocale): void {
         :aria-label="t('actions.language')"
       />
     </template>
-    <v-list density="compact" min-width="160">
+    <v-list density="compact" min-width="180">
       <v-list-item
         v-for="l in SUPPORTED_LOCALES"
         :key="l"
         :active="locale === l"
+        color="primary"
         @click="choose(l)"
       >
-        <template #prepend>
-          <v-icon v-if="locale === l" icon="mdi-check" size="18" />
-          <span v-else style="display: inline-block; width: 18px" />
-        </template>
         <v-list-item-title>{{ LOCALE_NAMES[l] }}</v-list-item-title>
+        <template #append>
+          <v-icon v-if="locale === l" icon="mdi-check" size="18" color="primary" />
+        </template>
       </v-list-item>
     </v-list>
   </v-menu>
