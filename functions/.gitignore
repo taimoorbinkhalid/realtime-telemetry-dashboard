@@ -1,4 +1,6 @@
+# Anchored to the functions root so it only ignores the tsc output dir,
+# NOT src/lib (the shared source modules).
+/lib/
 node_modules/
-lib/
 *.local
 .firebase/
