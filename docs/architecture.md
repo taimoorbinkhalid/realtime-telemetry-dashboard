@@ -59,28 +59,23 @@ function has baselines to evaluate against.
 
 ## Data flow
 
-```
-┌──────────────────────┐
-│ generateTelemetry     │  (scheduled, every 5 min, Admin SDK — prod writer)
-│ seeder/seed.ts        │  (local dev only, every 4s — same writes)
-└──────────┬───────────┘
-           │ writes devices + readings (bypass rules)
-           ▼
-     ┌───────────┐   onDocumentCreated    ┌──────────────────┐
-     │ Firestore │ ─────────────────────▶ │ onReadingCreated  │ evaluates thresholds,
-     │           │                        │ (Cloud Function)  │ maintains alerts/*
-     │           │ ◀───────────────────── │                   │ (open/resolve/escalate)
-     └─────┬─────┘   writes alerts         └──────────────────┘
-           │ onSnapshot (real-time)   +  getAggregateFromServer (Overview KPIs)
-           ▼
-   ┌─────────────────┐     ┌──────────────────────────────┐
-   │ services/*.ts   │ ──▶ │ Pinia stores                  │
-   │ (data-access)   │     │ auth · devices · alerts · user │
-   └─────────────────┘     └───────────────┬───────────────┘
-                                           ▼
-                              ┌─────────────────────────────┐
-                              │ views / components (reactive) │
-                              └─────────────────────────────┘
+```mermaid
+flowchart TD
+    GEN["generateTelemetry<br/>scheduled, every 5 min"]
+    SEED["seeder/seed.ts<br/>local dev, every 4s"]
+    FS[(Firestore)]
+    TRIG["onReadingCreated<br/>Cloud Function"]
+    SVC["services/*.ts<br/>data-access"]
+    STORES["Pinia stores<br/>auth, devices, alerts, user"]
+    UI["views / components<br/>reactive"]
+
+    GEN -->|"writes devices + readings (Admin SDK, bypass rules)"| FS
+    SEED -->|"writes devices + readings (Admin SDK, bypass rules)"| FS
+    FS -->|onDocumentCreated| TRIG
+    TRIG -->|"writes alerts (open / resolve / escalate)"| FS
+    FS -->|"onSnapshot + getAggregateFromServer (KPIs)"| SVC
+    SVC --> STORES
+    STORES --> UI
 ```
 
 1. In production the scheduled **`generateTelemetry`** writes telemetry every
