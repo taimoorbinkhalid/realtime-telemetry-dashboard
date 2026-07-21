@@ -114,6 +114,10 @@ Routes (all lazy, protected by default; opt out with `meta.public`):
 - **user** store holds favorites / acknowledgements / preferences and is the only
   place that writes (owner-scoped).
 
+Navigation is responsive (via Vuetify `useDisplay`): desktop/tablet use tabs in
+the app-bar extension; phones use a **bottom navigation** and a compacted app bar
+(icon-only actions, title hidden on the smallest screens).
+
 ## Localization (i18n)
 
 - Six locales: **en, de, fr, pl, it, es** (`src/i18n/locales/*.ts`), all keyed

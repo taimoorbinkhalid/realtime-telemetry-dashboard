@@ -83,7 +83,7 @@ function toggleSortDir(): void {
           density="compact"
           hide-details
           clearable
-          style="min-width: 220px; max-width: 320px"
+          style="flex: 1 1 240px"
         />
         <v-select
           v-model="statusFilter"
