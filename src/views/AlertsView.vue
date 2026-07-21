@@ -36,42 +36,41 @@ function onAcknowledge(alertId: string): void {
         <p class="text-medium-emphasis mb-0">{{ t('alerts.noneActive') }}</p>
       </div>
 
-      <v-list v-else lines="two">
+      <template v-else>
         <template v-for="(alert, i) in active" :key="alert.id">
-          <v-list-item :to="{ name: 'device', params: { id: alert.deviceId } }">
-            <template #prepend>
-              <SeverityChip :severity="alert.severity" class="me-3" />
-            </template>
-            <v-list-item-title>{{ alert.deviceName }}</v-list-item-title>
-            <v-list-item-subtitle>{{ alert.message }}</v-list-item-subtitle>
-            <template #append>
-              <div class="d-flex align-center ga-3">
-                <span class="text-caption text-medium-emphasis">
-                  {{ formatRelativeTime(alert.createdAt, locale) }}
-                </span>
-                <v-chip
-                  v-if="userStore.isAcknowledged(alert.id)"
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  prepend-icon="mdi-check"
-                >
-                  {{ t('actions.acknowledged') }}
-                </v-chip>
-                <v-btn
-                  v-else
-                  size="small"
-                  variant="tonal"
-                  @click.prevent.stop="onAcknowledge(alert.id)"
-                >
-                  {{ t('actions.acknowledge') }}
-                </v-btn>
-              </div>
-            </template>
-          </v-list-item>
-          <v-divider v-if="i < active.length - 1" inset />
+          <div class="alert-row pa-4">
+            <div class="d-flex align-center ga-2 mb-1">
+              <SeverityChip :severity="alert.severity" />
+              <router-link
+                :to="{ name: 'device', params: { id: alert.deviceId } }"
+                class="alert-device text-truncate font-weight-medium"
+              >
+                {{ alert.deviceName }}
+              </router-link>
+              <v-spacer />
+              <span class="text-caption text-medium-emphasis flex-shrink-0">
+                {{ formatRelativeTime(alert.createdAt, locale) }}
+              </span>
+            </div>
+            <div class="text-body-2 text-medium-emphasis">{{ alert.message }}</div>
+            <div class="d-flex justify-end mt-2">
+              <v-chip
+                v-if="userStore.isAcknowledged(alert.id)"
+                size="small"
+                variant="tonal"
+                color="success"
+                prepend-icon="mdi-check"
+              >
+                {{ t('actions.acknowledged') }}
+              </v-chip>
+              <v-btn v-else size="small" variant="tonal" @click="onAcknowledge(alert.id)">
+                {{ t('actions.acknowledge') }}
+              </v-btn>
+            </div>
+          </div>
+          <v-divider v-if="i < active.length - 1" />
         </template>
-      </v-list>
+      </template>
     </v-card>
 
     <!-- Recent resolved -->
@@ -81,23 +80,44 @@ function onAcknowledge(alertId: string): void {
         {{ t('alerts.recentlyResolved') }}
       </v-card-title>
       <v-divider />
-      <v-list lines="two">
-        <template v-for="(alert, i) in resolved" :key="alert.id">
-          <v-list-item :to="{ name: 'device', params: { id: alert.deviceId } }">
-            <template #prepend>
-              <v-icon icon="mdi-check-circle-outline" color="success" class="me-3" />
-            </template>
-            <v-list-item-title>{{ alert.deviceName }}</v-list-item-title>
-            <v-list-item-subtitle>{{ alert.message }}</v-list-item-subtitle>
-            <template #append>
-              <span class="text-caption text-medium-emphasis">
-                {{ alert.resolvedAt ? formatRelativeTime(alert.resolvedAt, locale) : '' }}
-              </span>
-            </template>
-          </v-list-item>
-          <v-divider v-if="i < resolved.length - 1" inset />
-        </template>
-      </v-list>
+      <template v-for="(alert, i) in resolved" :key="alert.id">
+        <div class="alert-row pa-4">
+          <div class="d-flex align-center ga-2 mb-1">
+            <v-icon icon="mdi-check-circle-outline" color="success" size="20" />
+            <router-link
+              :to="{ name: 'device', params: { id: alert.deviceId } }"
+              class="alert-device text-truncate font-weight-medium"
+            >
+              {{ alert.deviceName }}
+            </router-link>
+            <v-spacer />
+            <span class="text-caption text-medium-emphasis flex-shrink-0">
+              {{ alert.resolvedAt ? formatRelativeTime(alert.resolvedAt, locale) : '' }}
+            </span>
+          </div>
+          <div class="text-body-2 text-medium-emphasis alert-message-clamp">{{ alert.message }}</div>
+        </div>
+        <v-divider v-if="i < resolved.length - 1" />
+      </template>
     </v-card>
   </v-container>
 </template>
+
+<style scoped>
+.alert-device {
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.alert-device:hover {
+  text-decoration: underline;
+}
+/* Keep the resolved history compact: at most two lines per message. */
+.alert-message-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
